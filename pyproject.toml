@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "it-support-ticket-triage"
+version = "1.0.0"
+description = "OpenEnv IT Support Ticket Triage Environment"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+keywords = ["openenv", "reinforcement-learning", "nlp", "triage"]
+dependencies = [
+    "requests>=2.28.0",
+    "openai>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://huggingface.co/spaces/nikhilbabuy/openenv-ticket-triage"
+Repository = "https://github.com/nikhilbabuyellaturu/openenv-ticket-triage"

@@ -7,14 +7,24 @@ name = "it-support-ticket-triage"
 version = "1.0.0"
 description = "OpenEnv IT Support Ticket Triage Environment"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 keywords = ["openenv", "reinforcement-learning", "nlp", "triage"]
 dependencies = [
+    "openenv-core>=0.2.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
     "requests>=2.28.0",
     "openai>=1.0.0",
+    "pydantic>=2.0.0",
 ]
+
+[project.scripts]
+server = "server.app:main"
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces/nikhilbabuy/openenv-ticket-triage"
 Repository = "https://github.com/nikhilbabuyellaturu/openenv-ticket-triage"
+
+[tool.setuptools.packages.find]
+where = ["."]

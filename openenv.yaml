@@ -1,0 +1,71 @@
+﻿name: it-support-ticket-triage
+version: "1.0.0"
+description: >
+  A real-world IT support ticket triage environment where an AI agent
+  classifies, categorizes, assigns, and resolves incoming support tickets.
+tags:
+  - openenv
+  - real-world
+  - nlp
+  - classification
+  - enterprise
+api:
+  base_url: "http://localhost:7860"
+  endpoints:
+    reset: "POST /reset"
+    step:  "POST /step"
+    state: "GET  /state"
+action_space:
+  type: structured_json
+  fields:
+    priority:
+      type: enum
+      values: [LOW, MEDIUM, HIGH, CRITICAL]
+    category:
+      type: enum
+      values: [HARDWARE, SOFTWARE, NETWORK, SECURITY, ACCESS, OTHER]
+    assigned_team:
+      type: enum
+      values: [HELPDESK, SYSADMIN, NETWORK_OPS, SECURITY_OPS, DEVOPS, MANAGEMENT]
+    resolution_suggestion:
+      type: string
+    estimated_resolution_hours:
+      type: integer
+observation_space:
+  type: structured_json
+  fields:
+    ticket_id:          {type: string}
+    ticket_title:       {type: string}
+    ticket_description: {type: string}
+    task_type:          {type: enum, values: [EASY, MEDIUM, HARD]}
+    step_count:         {type: integer}
+    max_steps:          {type: integer}
+    done:               {type: boolean}
+    cumulative_reward:  {type: float}
+tasks:
+  - id: EASY
+    name: Priority Classification
+    difficulty: easy
+    max_steps: 1
+    baseline_score: 0.62
+  - id: MEDIUM
+    name: Full Categorization
+    difficulty: medium
+    max_steps: 1
+    baseline_score: 0.48
+  - id: HARD
+    name: Complete Triage
+    difficulty: hard
+    max_steps: 3
+    baseline_score: 0.34
+reward:
+  range: [0.0, 1.0]
+  type: dense
+baseline_scores:
+  model: gpt-4o-mini
+  seed: 42
+  scores:
+    EASY: 0.62
+    MEDIUM: 0.48
+    HARD: 0.34
+    average: 0.48

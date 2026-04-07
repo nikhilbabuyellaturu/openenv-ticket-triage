@@ -22,7 +22,7 @@ import java.util.Map;
  * GET  /health → health check
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping({"", "/api/v1"})
 @RequiredArgsConstructor
 @Tag(name = "OpenEnv Ticket Triage", description = "IT Support Ticket Triage RL Environment")
 public class OpenEnvController {

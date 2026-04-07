@@ -1,181 +1,85 @@
-# openenv.yaml — OpenEnv Environment Metadata
-# Validated via: openenv validate
-
 name: it-support-ticket-triage
 version: "1.0.0"
 description: >
   A real-world IT support ticket triage environment where an AI agent
   classifies, categorizes, assigns, and resolves incoming support tickets.
-  Simulates a task performed daily by Level 1/2 IT support staff.
 
 tags:
   - openenv
   - real-world
   - nlp
   - classification
-  - triage
   - enterprise
 
-author: "OpenEnv Contributor"
-license: MIT
-
-# ── Environment API ─────────────────────────────────────────────
 api:
-  base_url: "http://localhost:7860/api/v1"
+  base_url: "http://localhost:7860"
   endpoints:
     reset: "POST /reset"
     step:  "POST /step"
     state: "GET  /state"
-    info:  "GET  /info"
-  health_check: "GET /api/v1/health"
 
-# ── Action Space ────────────────────────────────────────────────
 action_space:
   type: structured_json
   fields:
     priority:
       type: enum
       values: [LOW, MEDIUM, HIGH, CRITICAL]
-      required_for: [EASY, MEDIUM, HARD]
-      description: Urgency level of the support ticket
-
     category:
       type: enum
       values: [HARDWARE, SOFTWARE, NETWORK, SECURITY, ACCESS, OTHER]
-      required_for: [MEDIUM, HARD]
-      description: Type/domain of the support issue
-
     assigned_team:
       type: enum
       values: [HELPDESK, SYSADMIN, NETWORK_OPS, SECURITY_OPS, DEVOPS, MANAGEMENT]
-      required_for: [MEDIUM, HARD]
-      description: Support team responsible for resolution
-
     resolution_suggestion:
       type: string
-      max_length: 1000
-      required_for: [HARD]
-      description: Recommended steps to resolve the ticket
-
     similar_ticket_ids:
       type: array
-      items: string
-      required_for: [HARD]
-      description: IDs of similar past tickets relevant to resolution
-
     estimated_resolution_hours:
       type: integer
-      min: 1
-      max: 720
-      required_for: [HARD]
-      description: Estimated time to resolve in hours
-
     reasoning:
       type: string
-      required_for: []
-      description: Agent's internal reasoning (never penalized)
 
-# ── Observation Space ───────────────────────────────────────────
 observation_space:
   type: structured_json
   fields:
-    ticket_id:          { type: string,  description: "Unique ticket identifier" }
-    ticket_title:       { type: string,  description: "One-line summary of the issue" }
-    ticket_description: { type: string,  description: "Full description of the problem" }
-    user_name:          { type: string,  description: "Name of the user who submitted the ticket" }
-    user_department:    { type: string,  description: "Department of the submitting user" }
-    submitted_at:       { type: string,  description: "ISO 8601 timestamp of submission" }
-    task_type:          { type: enum,    values: [EASY, MEDIUM, HARD] }
-    task_description:   { type: string,  description: "Natural language description of the current task" }
-    step_count:         { type: integer, description: "Steps taken in this episode" }
-    max_steps:          { type: integer, description: "Maximum steps allowed for this task" }
-    done:               { type: boolean, description: "Whether the episode has ended" }
-    previous_actions:   { type: array,   description: "List of actions taken so far" }
-    cumulative_reward:  { type: float,   description: "Reward accumulated in this episode" }
-    action_schema:      { type: object,  description: "Describes valid actions for this task" }
-    similar_tickets:    { type: array,   description: "HARD task only: similar resolved tickets" }
+    ticket_id:          {type: string}
+    ticket_title:       {type: string}
+    ticket_description: {type: string}
+    task_type:          {type: enum, values: [EASY, MEDIUM, HARD]}
+    step_count:         {type: integer}
+    max_steps:          {type: integer}
+    done:               {type: boolean}
+    cumulative_reward:  {type: float}
+    action_schema:      {type: object}
 
-# ── Tasks ────────────────────────────────────────────────────────
 tasks:
-
   - id: EASY
     name: Priority Classification
     difficulty: easy
     max_steps: 1
-    expected_score_range: [0.0, 1.0]
     baseline_score: 0.62
-    description: >
-      Given a support ticket, classify its priority as LOW, MEDIUM, HIGH, or CRITICAL.
-      Partial credit is awarded for near-correct answers (e.g., HIGH instead of CRITICAL
-      scores 0.5 instead of 0.0).
-    grader: EasyTaskGrader
-    reward_components:
-      priority_score: { weight: 1.0, max: 1.0 }
 
   - id: MEDIUM
     name: Full Categorization
     difficulty: medium
     max_steps: 1
-    expected_score_range: [0.0, 1.0]
     baseline_score: 0.48
-    description: >
-      Classify the ticket's priority, category, and assign it to the correct support
-      team. All three fields are required. Reward is additive across components.
-    grader: MediumTaskGrader
-    reward_components:
-      priority_score: { weight: 0.40, max: 0.40 }
-      category_score: { weight: 0.35, max: 0.35 }
-      team_score:     { weight: 0.25, max: 0.25 }
 
   - id: HARD
     name: Complete Triage
     difficulty: hard
     max_steps: 3
-    expected_score_range: [0.0, 1.0]
     baseline_score: 0.34
-    description: >
-      Perform full ticket triage: priority + category + team + resolution suggestion
-      + references to similar past tickets + estimated resolution time.
-      Agent has 3 steps and can refine its response across steps.
-      Reward is provided at each step, not just the end.
-    grader: HardTaskGrader
-    reward_components:
-      priority_score:    { weight: 0.25, max: 0.25 }
-      category_score:    { weight: 0.20, max: 0.20 }
-      team_score:        { weight: 0.15, max: 0.15 }
-      resolution_score:  { weight: 0.25, max: 0.25 }
-      reference_score:   { weight: 0.10, max: 0.10 }
-      time_score:        { weight: 0.05, max: 0.05 }
 
-# ── Reward Function ─────────────────────────────────────────────
 reward:
   range: [0.0, 1.0]
   type: dense
-  description: >
-    Rewards are non-binary and provided at each step. Partial credit is awarded
-    for near-correct classifications. Penalties are applied for invalid values
-    or missing required fields. Reward signal covers the full trajectory,
-    not just end-of-episode.
-  penalties:
-    missing_required_field: -0.05
-    invalid_enum_value:     -0.03 to -0.10
 
-# ── Baseline Scores ─────────────────────────────────────────────
 baseline_scores:
   model: gpt-4o-mini
   seed: 42
   scores:
-    EASY:   0.62
+    EASY: 0.62
     MEDIUM: 0.48
-    HARD:   0.34
+    HARD: 0.34
     average: 0.48
-
-# ── Setup ───────────────────────────────────────────────────────
-setup:
-  runtime: java17
-  framework: spring-boot-3.2
-  build: mvn clean package -DskipTests
-  run: java -jar target/ticket-triage-env-1.0.0.jar
-  docker:
-    build: docker build -t ticket-triage-env .
-    run: docker run -p 7860:7860 -e OPENAI_API_KEY=$OPENAI_API_KEY ticket-triage-env

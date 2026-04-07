@@ -1,0 +1,9 @@
+target/
+.idea/
+*.iml
+.DS_Store
+*.class
+*.jar
+!target/ticket-triage-env-1.0.0.jar
+.env
+*.log

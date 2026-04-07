@@ -1,0 +1,8 @@
+.git
+.gitignore
+.idea
+*.iml
+target/
+!target/ticket-triage-env-1.0.0.jar
+*.md
+.DS_Store

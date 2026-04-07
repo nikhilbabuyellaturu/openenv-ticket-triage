@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  ticket-triage-env:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ticket-triage-env:1.0.0
+    container_name: ticket-triage-env
+    ports:
+      - "7860:7860"
+    environment:
+      # Pass your OpenAI key for baseline inference
+      # Either set it in your shell or create a .env file:
+      #   echo "OPENAI_API_KEY=sk-..." > .env
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseContainerSupport"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:7860/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # Optional: run the Python baseline after the env is healthy
+  baseline:
+    image: python:3.11-slim
+    container_name: ticket-triage-baseline
+    depends_on:
+      ticket-triage-env:
+        condition: service_healthy
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ENV_URL: http://ticket-triage-env:7860/api/v1
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: >
+      sh -c "pip install -q openai requests &&
+             python baseline_runner.py --task ALL --output /workspace/baseline_results.json"
+    profiles:
+      # Only runs when explicitly requested:
+      # docker compose --profile baseline up baseline
+      - baseline

@@ -1,0 +1,13 @@
+
+  ___                  _____            
+ / _ \ _ __  ___ _ _ | ____|_ ____   __
+| | | | '_ \/ _ \ ' \|  _| | '_ \ \ / /
+| |_| | |_) \  __/ | | |___| | | \ V / 
+ \___/| .__/ \___|_| |_____|_| |_|\_/  
+      |_|                               
+
+  IT Support Ticket Triage Environment
+  Version : 1.0.0
+  Port    : ${server.port}
+  Docs    : http://localhost:${server.port}/swagger-ui
+  Health  : http://localhost:${server.port}/api/v1/health

@@ -1,0 +1,39 @@
+server:
+  port: 7860
+
+spring:
+  application:
+    name: openenv-ticket-triage
+  main:
+    web-application-type: servlet
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      indent-output: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}
+  model: ${OPENAI_MODEL:gpt-4o-mini}
+
+logging:
+  level:
+    com.openenv: INFO
+    org.springframework: WARN

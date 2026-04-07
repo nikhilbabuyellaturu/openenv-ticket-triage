@@ -1,28 +1,26 @@
 name: it-support-ticket-triage
-version: "1.0.0"
-description: IT support ticket triage RL environment
+version: 1.0.0
+description: IT support ticket triage reinforcement learning environment
+entry_point: http://localhost:7860
 tags:
   - openenv
-api:
-  base_url: https://nikhilbabuy-openenv-ticket-triage.hf.space
-  endpoints:
-    reset: POST /reset
-    step: POST /step
-    state: GET /state
-action_space:
-  type: structured_json
-observation_space:
-  type: structured_json
 tasks:
   - id: EASY
     difficulty: easy
     max_steps: 1
+    description: Classify ticket priority
   - id: MEDIUM
     difficulty: medium
     max_steps: 1
+    description: Classify priority, category and team
   - id: HARD
     difficulty: hard
     max_steps: 3
-reward:
-  range: [0.0, 1.0]
-  type: dense
+    description: Full triage with resolution suggestion
+action_space:
+  type: dict
+observation_space:
+  type: dict
+reward_range:
+  - 0.0
+  - 1.0
